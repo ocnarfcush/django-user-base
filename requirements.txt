@@ -1,0 +1,12 @@
+# User accounts preparation
+django==5.2.4 
+djangorestframework==3.16.0
+markdown==3.8.2
+django-filter==25.1
+djangorestframework-simplejwt==5.5.0 
+pyjwt==2.9.0
+django-cors-headers==4.7.0
+dotenv==0.9.9 
+python-dotenv==1.1.1
+psycopg==3.2.9
+psycopg2==2.9.10
