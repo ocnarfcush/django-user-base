@@ -1,0 +1,8 @@
+# for developers
+black 
+isort 
+flake8 
+mypy 
+pytest 
+pytest-django 
+factory-boy

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+{% load socialaccount %}
+{% provider_login_url 'facebook' process='login' as facebook_url %}
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Log In</title>
+  <style>
+    body { font-family: sans-serif; max-width:400px; margin:40px auto; }
+    input { width:100%; padding:8px; margin:6px 0; }
+    button { padding:10px; width:100%; }
+    .error { color:red; }
+  </style>
+</head>
+<body>
+  <h1>Log In</h1>
+  <form id="login-form">
+    {% csrf_token %}
+    <input type="text" id="username" name="username" placeholder="Username or Email" required>
+    <input type="password" id="password" name="password" placeholder="Password" required>
+    <button type="submit">Log In</button>
+  </form>
+  <p class="error" id="error-msg"></p>
+
+  <script>
+    // read CSRF cookie
+    function getCookie(name) {
+      const cookies = document.cookie.split(';');
+      for (let c of cookies) {
+        let [k,v] = c.trim().split('=');
+        if (k === name) return decodeURIComponent(v);
+      }
+      return null;
+    }
+
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const user = document.getElementById('username').value;
+      const pass = document.getElementById('password').value;
+      const errEl = document.getElementById('error-msg');
+      errEl.textContent = "";
+
+      try {
+        const resp = await fetch('/api/auth/login/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken'),
+          },
+          credentials: 'include',
+          body: JSON.stringify({ username: user, password: pass })
+        });
+        const data = await resp.json();
+        if (!resp.ok) {
+          errEl.textContent = data.detail || JSON.stringify(data);
+        } else {
+          // store your tokens
+          localStorage.setItem('access_token', data.access_token);
+          localStorage.setItem('refresh_token', data.refresh_token);
+          // redirect to home or dashboard
+          window.location.href = '/';
+        }
+      } catch (err) {
+        errEl.textContent = 'Network error, please try again.';
+      }
+    });
+  </script>
+  <div id="fb-root"></div>
+  <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v23.0&appId=845752670316651"></script>
+  <div class="fb-login-button" data-width="300" data-size="large" data-button-type="" data-layout="" data-auto-logout-link="false" data-use-continue-as="true"></div>
+  <!-- <a href="{{ facebook_url }}">Login with Facebook</a> -->
+
+  <script>
+    window.fbAsyncInit = function() {
+        FB.init({
+        appId      : '521482844352564',
+        cookie     : true,
+        xfbml      : true,
+        version    : 'v15.0'
+        });
+        
+        FB.AppEvents.logPageView();   
+        
+    };
+
+    (function(d, s, id){
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) {return;}
+        js = d.createElement(s); js.id = id;
+        js.src = "https://connect.facebook.net/en_US/sdk.js";
+        fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+
+    FB.getLoginStatus(function(response) {
+        statusChangeCallback(response);
+    });
+
+    function checkLoginState() {
+        FB.getLoginStatus(function(response) {
+            statusChangeCallback(response);
+        });
+    }
+  </script>
+
+</body>
+</html>
